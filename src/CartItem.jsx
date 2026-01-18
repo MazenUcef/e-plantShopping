@@ -1,35 +1,30 @@
-import React from 'react';
-import { useDispatch } from 'react-redux';
-import {
-  increaseQuantity,
-  decreaseQuantity,
-  removeItem,
-  CartItem as ItemType,
-} from '../redux/CartSlice';
+import React from "react";
+import { useSelector } from "react-redux";
+import CartItem from "./CartItem";
 
-interface Props {
-  item: ItemType;
-}
+const Cart = () => {
+  const items = useSelector(state => state.cart.items);
 
-const CartItem: React.FC<Props> = ({ item }) => {
-  const dispatch = useDispatch();
+  const calculateTotalAmount = () => {
+    return items.reduce(
+      (total, item) => total + item.quantity * item.price,
+      0
+    );
+  };
 
   return (
-    <div className="cart-item">
-      <img src={item.image} alt={item.name} width="80" />
+    <div>
+      <h2>Shopping Cart</h2>
 
-      <div>
-        <h4>{item.name}</h4>
-        <p>Unit Price: ${item.price}</p>
-        <p>Quantity: {item.quantity}</p>
-        <p><strong>Total: ${item.total}</strong></p>
+      {items.length === 0 && <p>Your cart is empty</p>}
 
-        <button onClick={() => dispatch(increaseQuantity(item.id))}>+</button>
-        <button onClick={() => dispatch(decreaseQuantity(item.id))}>-</button>
-        <button onClick={() => dispatch(removeItem(item.id))}>Delete</button>
-      </div>
+      {items.map(item => (
+        <CartItem key={item.id} item={item} />
+      ))}
+
+      <h3>Total Cart Amount: ${calculateTotalAmount()}</h3>
     </div>
   );
 };
 
-export default CartItem;
+export default Cart;
