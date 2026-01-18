@@ -1,84 +1,35 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-export interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  quantity: number;
-  total: number;
-}
-
-interface CartState {
-  items: CartItem[];
-  totalQuantity: number;
-  totalAmount: number;
-}
-
-const initialState: CartState = {
-  items: [],
-  totalQuantity: 0,
-  totalAmount: 0,
-};
-
-const cartSlice = createSlice({
-  name: 'cart',
-  initialState,
-  reducers: {
-    addItem(state, action: PayloadAction<Omit<CartItem, 'quantity' | 'total'>>) {
-      const item = state.items.find(i => i.id === action.payload.id);
-
-      state.totalQuantity++;
-      state.totalAmount += action.payload.price;
-
-      if (!item) {
-        state.items.push({
-          ...action.payload,
-          quantity: 1,
-          total: action.payload.price,
-        });
-      } else {
-        item.quantity++;
-        item.total += item.price;
-      }
-    },
-
-    increaseQuantity(state, action: PayloadAction<number>) {
-      const item = state.items.find(i => i.id === action.payload);
-      if (!item) return;
-
-      item.quantity++;
-      item.total += item.price;
-      state.totalQuantity++;
-      state.totalAmount += item.price;
-    },
-
-    decreaseQuantity(state, action: PayloadAction<number>) {
-      const item = state.items.find(i => i.id === action.payload);
-      if (!item || item.quantity === 1) return;
-
-      item.quantity--;
-      item.total -= item.price;
-      state.totalQuantity--;
-      state.totalAmount -= item.price;
-    },
-
-    removeItem(state, action: PayloadAction<number>) {
-      const item = state.items.find(i => i.id === action.payload);
-      if (!item) return;
-
-      state.totalQuantity -= item.quantity;
-      state.totalAmount -= item.total;
-      state.items = state.items.filter(i => i.id !== action.payload);
-    },
-  },
-});
-
-export const {
-  addItem,
+import React from 'react';
+import { useDispatch } from 'react-redux';
+import {
   increaseQuantity,
   decreaseQuantity,
   removeItem,
-} = cartSlice.actions;
+  CartItem as ItemType,
+} from '../redux/CartSlice';
 
-export default cartSlice.reducer;
+interface Props {
+  item: ItemType;
+}
+
+const CartItem: React.FC<Props> = ({ item }) => {
+  const dispatch = useDispatch();
+
+  return (
+    <div className="cart-item">
+      <img src={item.image} alt={item.name} width="80" />
+
+      <div>
+        <h4>{item.name}</h4>
+        <p>Unit Price: ${item.price}</p>
+        <p>Quantity: {item.quantity}</p>
+        <p><strong>Total: ${item.total}</strong></p>
+
+        <button onClick={() => dispatch(increaseQuantity(item.id))}>+</button>
+        <button onClick={() => dispatch(decreaseQuantity(item.id))}>-</button>
+        <button onClick={() => dispatch(removeItem(item.id))}>Delete</button>
+      </div>
+    </div>
+  );
+};
+
+export default CartItem;
