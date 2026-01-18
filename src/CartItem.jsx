@@ -1,30 +1,49 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import CartItem from "./CartItem";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { updateQuantity, removeItem } from "../redux/CartSlice";
 
-const Cart = () => {
-  const items = useSelector(state => state.cart.items);
+const CartItem = ({ item }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const calculateTotalAmount = () => {
-    return items.reduce(
-      (total, item) => total + item.quantity * item.price,
-      0
-    );
+  const handleIncrement = () => {
+    dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }));
   };
 
+  const handleDecrement = () => {
+    if (item.quantity > 1) {
+      dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }));
+    }
+  };
+
+  const itemTotal = item.quantity * item.price;
+
   return (
-    <div>
-      <h2>Shopping Cart</h2>
+    <div className="cart-item">
+      <img src={item.image} alt={item.name} width="80" />
+      <h4>{item.name}</h4>
+      <p>Unit Price: ${item.price}</p>
 
-      {items.length === 0 && <p>Your cart is empty</p>}
+      <p>Quantity: {item.quantity}</p>
+      <p><strong>Total: ${itemTotal}</strong></p>
 
-      {items.map(item => (
-        <CartItem key={item.id} item={item} />
-      ))}
+      <button onClick={handleIncrement}>+</button>
+      <button onClick={handleDecrement}>-</button>
 
-      <h3>Total Cart Amount: ${calculateTotalAmount()}</h3>
+      <button onClick={() => dispatch(removeItem(item.id))}>
+        Delete
+      </button>
+
+      <button onClick={() => navigate("/products")}>
+        Continue Shopping
+      </button>
+
+      <button onClick={() => alert("Checkout coming soon!")}>
+        Checkout
+      </button>
     </div>
   );
 };
 
-export default Cart;
+export default CartItem;
